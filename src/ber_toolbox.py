@@ -1,19 +1,58 @@
-# ber_toolbox.py ──────────────────────────────────────────────────────
 """
-Closed‑form BER for a BPSK system with inter‑symbol interference (ISI)
-caused by an arbitrary pulse shape g(t).
+Closed-form BER Computation for BPSK with ISI and CCI
+------------------------------------------------------
 
-It implements Craig’s series expression:
+This module provides closed-form expressions for the bit error rate (BER) in
+a BPSK system subject to:
 
-    Pe = ½ – (2/π) Σ_{m odd}  e^{-(mω)^2/2} sin(mωg0) / m ⋅ Π_k cos(mωgk)
+1. Intersymbol interference (ISI),
+2. Co-channel interference (CCI), or
+3. Simultaneous ISI and CCI.
 
-where
-  • g0 = coeff · g(τ)             main‑tap contribution
-  • gk = coeff · a_k g(τ – k)     ISI taps (a_k ∈ {±1} for BPSK)
-  • ω  = noise std (in radians)   (0.10 used in the legacy code)
+All expressions follow the analytical framework proposed by
+N. C. Beaulieu (2007).
 
-The function returns Pe for the four timing offsets
-τ/T ∊ {0.05, 0.10, 0.20, 0.25}.
+─────────────────────────────────────────────────────────────────────────────
+
+1. ISI-Only Case — `ber_isi_closed_form`
+----------------------------------------
+Implements Craig’s series expression for a BPSK system with ISI:
+
+    Pe = ½ – (2/π) Σ_{m odd} e^{-(mω)²/2} · sin(mω·g₀) / m · Π_k cos(mω·g_k)
+
+where:
+  • g₀ = coeff · g(τ)           → main-tap contribution
+  • g_k = coeff · a_k·g(τ−k)    → ISI taps (a_k ∈ {±1})
+  • ω  = noise std (default 0.10)
+
+─────────────────────────────────────────────────────────────────────────────
+
+2. CCI-Only Case — `ber_cci_closed_form`
+----------------------------------------
+Implements Beaulieu’s approximation for BPSK with L co-channel interferers:
+
+    Pe = ½ – (2/π) Σ_{m odd} e^{-(mω)²/2} · sin(mω·g₀) / m · Π_i J₀(mω·r_i)
+
+where:
+  • g₀ = coeff · g(τ)              → desired main tap
+  • r_i = ±a (random sign)         → L interferer taps
+  • J₀() = Bessel function of the first kind
+
+─────────────────────────────────────────────────────────────────────────────
+
+3. ISI + CCI Case — `ber_cci_isi_closed_form`
+---------------------------------------------
+Combines Craig’s ISI and Beaulieu’s CCI approximations:
+
+    Pe = ½ – (2/π) Σ_{m odd} e^{-(mω)²/2} · sin(mω·g₀) / m
+                          · Π_k cos(mω·g_k) · Π_i J₀(mω·r_i)
+
+─────────────────────────────────────────────────────────────────────────────
+
+In all cases:
+  • g(t, α) is the pulse shape used.
+  • τ/T ∊ {0.05, 0.10, 0.20, 0.25} by default (timing offsets).
+  • `snr_db`, `sir_db`, and other parameters control noise and interference.
 """
 
 from typing import Callable, Sequence, Union, Optional
@@ -27,8 +66,18 @@ def _resolve_pulse(
     pulse: Union[str, Callable[[NDArray[np.float64], float], NDArray[np.float64]]]
 ) -> Callable[[NDArray[np.float64], float], NDArray[np.float64]]:
     """
-    Accepts a pulse function or its string key (looked up in pulse_toolbox).
-    Returns the callable g(t, alpha).
+    Resolves a pulse reference to a callable function.
+
+    Parameters
+    ----------
+    pulse : str or callable
+        If a string, it must match a pulse function name from `pulse_toolbox`.
+        If a callable, it is returned as is.
+
+    Returns
+    -------
+    Callable
+        A pulse function of the form g(t: NDArray, alpha: float) -> NDArray.
     """
     if isinstance(pulse, str):
         pulse = getattr(importlib.import_module("pulse_toolbox"), pulse)
@@ -48,7 +97,32 @@ def ber_isi_closed_form(
     rng: Optional[np.random.Generator] = None,
 ) -> NDArray[np.float64]:
     """
-    Closed‑form BER for **ISI only** (Craig, Eq. 7).
+    Computes the closed-form BER due to inter-symbol interference (ISI)
+    using Craig’s series formula.
+
+    Parameters
+    ----------
+    pulse : str or callable
+        Pulse function to evaluate.
+    alpha : float
+        Roll-off or shaping factor.
+    snr_db : float
+        Signal-to-noise ratio in dB.
+    nbits : int, optional
+        Number of interfering symbols (default is 1024).
+    M : int, optional
+        Number of odd-series terms to include in the expansion (default is 100).
+    omega : float, optional
+        Noise angular standard deviation (default is 0.10).
+    offsets : sequence of float, optional
+        Timing offsets τ/T at which to compute BER.
+    rng : numpy.random.Generator, optional
+        RNG for generating ISI taps.
+
+    Returns
+    -------
+    ber : NDArray
+        Bit error rate values for each specified timing offset.
     """
     g = _resolve_pulse(pulse)
 
@@ -96,23 +170,34 @@ def ber_cci_closed_form(
     rng: Optional[np.random.Generator] = None,
 ) -> NDArray[np.float64]:
     """
-    Closed‑form BER due to **co‑channel interference only** .
-
-    Each interfering signal is assumed BPSK with identical pulse shape and
-    independent random symbols/phases.  The effective interference tap
-    amplitude is scaled so that SIR (in dB) is satisfied **per interferer**.
+    Computes the closed-form BER due to co-channel interference (CCI)
+    using the expression derived by Beaulieu.
 
     Parameters
     ----------
+    pulse : str or callable
+        Pulse function to evaluate.
+    alpha : float
+        Roll-off or shaping factor.
+    snr_db : float
+        Signal-to-noise ratio in dB for the desired user.
     sir_db : float
-        Desired‑to‑interferer power ratio in dB (per interferer).
-    L : int
-        Number of equal‑power interferers.
+        Signal-to-interferer ratio in dB per interferer.
+    L : int, optional
+        Number of co-channel interferers (default is 2).
+    M : int, optional
+        Number of odd-series terms to include in the expansion (default is 100).
+    omega : float, optional
+        Noise angular standard deviation (default is 0.10).
+    offsets : sequence of float, optional
+        Timing offsets τ/T at which to compute BER.
+    rng : numpy.random.Generator, optional
+        RNG for generating CCI taps.
 
-    Notes
-    -----
-    - Interference taps r_i are modelled as ± a with
-      ``a = 10**(-sir_db/20)`` and random sign.
+    Returns
+    -------
+    ber : NDArray
+        Bit error rate values for each specified timing offset.
     """
     g = _resolve_pulse(pulse)
     if rng is None:
@@ -150,7 +235,36 @@ def ber_cci_isi_closed_form(
     rng: Optional[np.random.Generator] = None,
 ) -> NDArray[np.float64]:
     """
-    Closed‑form BER with **simultaneous ISI and CCI** (Eq. 8).
+    Computes the closed-form BER due to both ISI and CCI,
+    combining the expressions from Craig’s method and Beaulieu.
+
+    Parameters
+    ----------
+    pulse : str or callable
+        Pulse function to evaluate.
+    alpha : float
+        Roll-off or shaping factor.
+    snr_db : float
+        Signal-to-noise ratio in dB.
+    sir_db : float
+        Signal-to-interferer ratio in dB.
+    L : int, optional
+        Number of co-channel interferers (default is 2).
+    nbits : int, optional
+        Number of interfering symbols for ISI computation (default is 1024).
+    M : int, optional
+        Number of odd-series terms to include in the expansion (default is 100).
+    omega : float, optional
+        Noise angular standard deviation (default is 0.10).
+    offsets : sequence of float, optional
+        Timing offsets τ/T at which to compute BER.
+    rng : numpy.random.Generator, optional
+        RNG for generating both ISI and CCI taps.
+
+    Returns
+    -------
+    ber : NDArray
+        Bit error rate values for each specified timing offset.
     """
     g = _resolve_pulse(pulse)
     if rng is None:

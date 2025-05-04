@@ -1,8 +1,4 @@
-# ──────────────────────────────────────────────────────────────
-# Pulse Analysis Demo Script
-
 from pulse_toolbox import get_pulse_info
-
 from plot_utils import (
     plot_pulse_markers,
     plot_eye_traces
@@ -12,7 +8,7 @@ from ber_toolbox import ber_isi_closed_form
 
 # ──────────────────────────────────────────────────────────────
 # 1. Style setup
-set_plot_style("solar_flare")
+set_plot_style("prism_rain_dark")
 
 # ──────────────────────────────────────────────────────────────
 # 2. Global parameters
