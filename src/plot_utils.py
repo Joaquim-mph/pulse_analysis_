@@ -167,8 +167,12 @@ def plot_pulse_markers(
 
             marker = MARKERS[i % len(MARKERS)]
             linestyle = LINESTYLES[i % len(LINESTYLES)]
-            ax.plot(x[pos], y[pos], label=label, marker=marker,
-                    linestyle=linestyle, markersize=markersize, linewidth=linewidth)
+            if key=="impulse":
+                ax.plot(x[pos], y[pos], label=label, marker=marker,
+                        linestyle=linestyle, markersize=markersize, linewidth=linewidth, markevery=2)
+            else:
+                ax.plot(x[pos], y[pos], label=label, marker=marker,
+                        linestyle=linestyle, markersize=markersize, linewidth=linewidth, markevery=3)
 
         ax.set_title(cfg["title"])
         ax.set_xlabel(cfg["x_label"])

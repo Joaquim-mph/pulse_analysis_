@@ -8,7 +8,7 @@ from ber_toolbox import ber_isi_closed_form
 
 # ──────────────────────────────────────────────────────────────
 # 1. Style setup
-set_plot_style("prism_rain_dark")
+set_plot_style("prism_rain")
 
 # ──────────────────────────────────────────────────────────────
 # 2. Global parameters
@@ -121,6 +121,10 @@ print("Craig BER (Raised Cosine):", ber_cf)
 
 # ──────────────────────────────────────────────────────────────
 # 6. Eye Diagrams
+
+set_plot_style("prism_rain")
+
+
 plot_eye_traces(
     "raised_cosine",
     alpha=0.22,

@@ -234,6 +234,7 @@ STYLE_CONFIGS = {
             "axes.prop_cycle": plt.cycler(color=["black"]),
         }
     },
+    
     "deep_forest": {
         "base": ["science"],
         "rc": {
@@ -265,6 +266,7 @@ STYLE_CONFIGS = {
             ]),
         }
     },
+    
     "cryolab": {
         "base": ["science"],
         "rc": {
@@ -295,6 +297,7 @@ STYLE_CONFIGS = {
             ]),
         }
     },
+    
     "ink_sketch": {
         "base": ["science"],
         "rc": {
@@ -324,6 +327,7 @@ STYLE_CONFIGS = {
             "axes.prop_cycle": plt.cycler(color=["black"]),
         }
     },
+    
     "prism_rain": {
         "base": ["science"],
         "rc": {
@@ -358,6 +362,7 @@ STYLE_CONFIGS = {
             ]),
         }
     },
+    
     "prism_rain_dark": {
         "base": ["science"],
         "rc": {
@@ -391,12 +396,10 @@ STYLE_CONFIGS = {
                 "#72efdd", "#ffd166", "#b5baff", "#ffb3de",
                 "#d9f99d", "#fff75e", "#f0dab1", "#dddddd",
                 "#90f9c4", "#ff9671", "#b2a8ff", "#ff59a8"
-            ]),
+                ]),
+            }
         }
     }
-
-
-}
 
 
 
