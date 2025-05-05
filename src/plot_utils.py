@@ -211,7 +211,6 @@ def plot_eye_traces(
     max_traces: int = 500,
     pulse_kwargs: Optional[dict] = None,
     parts: Sequence[str] = ("real",),
-    style: str = "default",
     prefix: str = "",
     show: bool = True,
     savefig: bool = True,
@@ -267,7 +266,6 @@ def plot_eye_traces(
     )
 
     # ------------------------------------------------------------------ plot
-    set_plot_style(style)
     n_parts = len(parts)
     fig, axes = plt.subplots(
         n_parts, 1, figsize=(figsize[0], figsize[1] * n_parts),

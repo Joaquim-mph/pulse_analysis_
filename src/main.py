@@ -5,7 +5,7 @@ from plot_utils import (
 )
 from styles import set_plot_style
 from ber_toolbox import ber_isi_closed_form
-
+from eye_utils import compute_max_distortion_analytical
 # ──────────────────────────────────────────────────────────────
 # 1. Style setup
 set_plot_style("prism_rain")
@@ -16,7 +16,7 @@ span_T   = 10
 ovs      = 20
 nfft     = 2048
 T        = 1.0
-alpha    = 0.5
+alpha    = 0.35
 normalize = "amplitude"
 freq_axis = "fB"  # Can be "fT" or "fB"
 
@@ -104,6 +104,10 @@ plot_pulse_markers(
     f_db_xlim=(-10,10)
 )
 
+
+for pulse in ["raised_cosine", "btrc", "elp", "iplcp"]:
+    d = compute_max_distortion_analytical(pulse, alpha=0.35)
+    print(f"{pulse}: max ISI distortion = {d:.4e}")
 
 # ──────────────────────────────────────────────────────────────
 # 4. Closed‑form BER for Raised‑Cosine
