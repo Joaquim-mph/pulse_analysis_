@@ -289,9 +289,9 @@ def plot_eye_traces(
 
     fig.tight_layout()
     if savefig and prefix:
-        os.makedirs(os.path.dirname(prefix) or ".", exist_ok=True)
         for part, ax in zip(parts, axes):
-            fig_path = f"{prefix}_eye_{part}.png"
+            fig_path = f"eye_{prefix}_{part}.png"
+            os.makedirs(os.path.dirname(fig_path) or ".", exist_ok=True)
             fig.savefig(fig_path, dpi=dpi)
     if show:
         plt.show()
