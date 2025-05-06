@@ -4,16 +4,19 @@ from scipy.signal import upfirdn
 import matplotlib.pyplot as plt
 from pulse_toolbox import t_axis, compute_pulse, PULSE_FNS
 
+
 def generate_qpsk_symbols(n: int, rng: Optional[np.random.Generator] = None) -> np.ndarray:
     rng = rng or np.random.default_rng()
     bits_i = rng.integers(0, 2, n, dtype=int)
     bits_q = rng.integers(0, 2, n, dtype=int)
     return (2 * bits_i - 1) + 1j * (2 * bits_q - 1)
 
+
 def generate_bpsk_symbols(n: int, rng: Optional[np.random.Generator] = None) -> np.ndarray:
     rng = rng or np.random.default_rng()
     bits = rng.integers(0, 2, n)
     return 2 * bits - 1  # BPSK: ±1
+
 
 def _resolve_pulse(pulse_ref: Union[str, Callable]) -> Callable:
     if callable(pulse_ref):
@@ -21,6 +24,7 @@ def _resolve_pulse(pulse_ref: Union[str, Callable]) -> Callable:
     if pulse_ref in PULSE_FNS:
         return PULSE_FNS[pulse_ref]
     raise ValueError(f"Unknown pulse '{pulse_ref}'")
+
 
 def eye_diagram(
     pulse: Union[str, Callable],
