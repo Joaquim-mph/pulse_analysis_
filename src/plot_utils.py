@@ -261,7 +261,7 @@ def plot_eye_traces(
     eye, t_eye = eye_diagram(
         pulse, alpha=alpha, fs=fs, span_T=span_T,
         n_symbols=n_symbols, eye_T=eye_T, max_traces=max_traces,
-        pulse_kwargs=pulse_kwargs, parts=parts, show=False,
+        pulse_kwargs=pulse_kwargs, parts=parts,
         normalize=normalize
     )
 
@@ -296,4 +296,8 @@ def plot_eye_traces(
     if show:
         plt.show()
 
-    return eye, t_eye
+    # Compute max absolute amplitude at t/T = 0.5
+    idx_half = np.argmin(np.abs(t_eye - 0.5))
+    max_at_half = np.max(np.abs(eye[:, idx_half].real))
+
+    return eye, t_eye, max_at_half

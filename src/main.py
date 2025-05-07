@@ -6,7 +6,6 @@ from plot_utils import (
 from styles import set_plot_style
 from ber_toolbox import ber_isi_closed_form
 
-
 # ──────────────────────────────────────────────────────────────
 # 1. Style setup
 set_plot_style("prism_rain")
@@ -126,7 +125,7 @@ print("Craig BER (Raised Cosine):", ber_cf)
 set_plot_style("prism_rain")
 
 
-plot_eye_traces(
+_, _, rc_max = plot_eye_traces(
     "raised_cosine",
     alpha=0.22,
     normalize="continuous",
@@ -135,7 +134,7 @@ plot_eye_traces(
     show=False
 )
 
-plot_eye_traces(
+_, _, btrc_max = plot_eye_traces(
     "btrc",
     alpha=0.22,
     normalize="continuous",
@@ -144,7 +143,7 @@ plot_eye_traces(
     show=False
 )
 
-plot_eye_traces(
+_, _, elp_max = plot_eye_traces(
     "elp",
     alpha=0.22,
     pulse_kwargs=dict(beta=0.1),
@@ -155,7 +154,7 @@ plot_eye_traces(
 )
 
 
-plot_eye_traces(
+_, _, iplcp_max = plot_eye_traces(
     "iplcp",
     alpha=0.22,
     pulse_kwargs=dict(mu=1.6, gamma=1, epsilon=0.1),
@@ -164,3 +163,11 @@ plot_eye_traces(
     prefix="figures/iplcp_energy",
     show=False
 )
+
+print("\n Maximum Amplitude Values from Eye Diagrams (α = 0.22):\n")
+print(f"{'Pulse':<10} | {'Max Amplitude':>15}")
+print("-" * 30)
+print(f"{'RC':<10} | {rc_max:>15.4f}")
+print(f"{'BTRC':<10} | {btrc_max:>15.4f}")
+print(f"{'ELP':<10} | {elp_max:>15.4f}")
+print(f"{'IPLCP':<10} | {iplcp_max:>15.4f}")

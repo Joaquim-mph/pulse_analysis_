@@ -44,7 +44,7 @@ def compute_ber_sim(
     return BER_sim
 
 
-def simulate_bpsk_numba(
+def simulate_bpsk(
     num_bits=100000,
     max_runs=21,
     Eb=1.0,
@@ -62,11 +62,12 @@ def simulate_bpsk_numba(
     # Plotting
     plt.figure(figsize=(8,5))
     plt.semilogy(SNR_dB, BER_th, 'k-',   label='Theoretical')
-    plt.semilogy(SNR_dB, BER_sim, 'k*',  label='Numba Sim')
+    plt.semilogy(SNR_dB, BER_sim, 'k*',  label='Simulation')
+    plt.grid(True)
     #plt.grid(True, which='both', ls='--', lw=0.5)
     plt.xlabel('Eb/No (dB)')
     plt.ylabel('Bit Error Rate')
-    plt.title('BPSK AWGN (Numba‐Accelerated)')
+    plt.title('BPSK AWGN')
     plt.legend()
     #plt.ylim(1e-7, 1)
     #plt.savefig("BER_BPSK_AWGN.png", dpi = 300)
@@ -75,7 +76,4 @@ def simulate_bpsk_numba(
     return SNR_dB, BER_th, BER_sim
 
 if __name__ == "__main__":
-    simulate_bpsk_numba()
-    
-
-
+    simulate_bpsk()

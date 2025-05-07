@@ -38,7 +38,6 @@ def eye_diagram(
     rng: Optional[np.random.Generator] = None,
     pulse_kwargs: Optional[dict] = None,
     parts: Sequence[str] = ("real",),
-    show: bool = True,
     normalize: Literal["amplitude", "continuous", "discrete"] = "continuous"
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
@@ -80,20 +79,6 @@ def eye_diagram(
     second_last = eye[:, -2]
     extra = last + (last - second_last)
     eye = np.hstack([eye, extra[:, None]]) # Agrega un punto al final para asegurar t_eye tiene misma longitud que eye row
-
-    if show:
-        plt.figure(figsize=(8, 3 * len(parts)))
-        for idx, part in enumerate(parts, 1):
-            plt.subplot(len(parts), 1, idx)
-            sig = eye.real if part == "real" else eye.imag
-            plt.plot(t_eye, sig.T, color='k', lw=0.1)
-            plt.title(f"Eye diagram ({part}) — {pulse if isinstance(pulse, str) else pulse.__name__}")
-            plt.xlabel("t / T")
-            plt.ylabel("Amplitude")
-            plt.xlim(-eye_T / 2, eye_T / 2)
-            plt.grid(True)
-        plt.tight_layout()
-        plt.show()
 
     return eye, t_eye
 
