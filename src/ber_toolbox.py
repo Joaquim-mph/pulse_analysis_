@@ -60,27 +60,18 @@ import importlib
 import numpy as np
 from numpy.typing import NDArray
 from scipy.special import j0  
-
+from pulse_toolbox import PULSE_FNS
 
 def _resolve_pulse(
     pulse: Union[str, Callable[[NDArray[np.float64], float], NDArray[np.float64]]]
 ) -> Callable[[NDArray[np.float64], float], NDArray[np.float64]]:
     """
     Resolves a pulse reference to a callable function.
-
-    Parameters
-    ----------
-    pulse : str or callable
-        If a string, it must match a pulse function name from `pulse_toolbox`.
-        If a callable, it is returned as is.
-
-    Returns
-    -------
-    Callable
-        A pulse function of the form g(t: NDArray, alpha: float) -> NDArray.
     """
     if isinstance(pulse, str):
-        pulse = getattr(importlib.import_module("pulse_toolbox"), pulse)
+        if pulse not in PULSE_FNS:
+            raise ValueError(f"Unknown pulse name '{pulse}' in PULSE_FNS.")
+        return PULSE_FNS[pulse]
     return pulse
 
 

@@ -4,7 +4,13 @@ from plot_utils import (
     plot_eye_traces
 )
 from styles import set_plot_style
-from ber_toolbox import ber_isi_closed_form
+from ber_toolbox import (
+    _resolve_pulse,
+    ber_isi_closed_form,
+    ber_cci_closed_form,
+    ber_cci_isi_closed_form
+)
+
 
 # ──────────────────────────────────────────────────────────────
 # 1. Style setup
@@ -119,6 +125,7 @@ print("Craig BER (Raised Cosine):", ber_cf)
 
 
 
+    
 # ──────────────────────────────────────────────────────────────
 # 6. Eye Diagrams
 

@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.special import erfc
 from numba import njit, prange
 
+
 # 1) JIT‐compiled compute function
 @njit(parallel=True)
 def compute_ber_sim(
