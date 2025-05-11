@@ -1,9 +1,28 @@
 import re
 import numpy as np
 
+PULSE_RENAME = {
+    "raised_cosine": "RC",
+    "btrc":         "BTRC",
+    "elp":          "ELP",
+    "iplcp":        "IPLCP",
+}
 
-def fmt(x): 
-    return f"{x:.6e}"
+
+
+def fmt(x):
+    return f"{x:.2e}"
+
+def truncate_pulse(base_pulse, t_max: float):
+    def g_truncated(t, alpha):
+        out = base_pulse(t, alpha)
+        out[np.abs(t) > t_max] = 0.0
+        return out
+    return g_truncated
+
+def _parse_key(key, pattern):
+    m = re.match(pattern, key)
+    return m.groupdict() if m else None
 
 
 def export_flat_latex_table(results, filename=None):
@@ -12,7 +31,7 @@ def export_flat_latex_table(results, filename=None):
 
     lines = [
         "\\begin{table}[h!]",
-        "\\centering",
+        "\\centering\scriptsize",
         "\\caption{BER para diferentes valores de SNR y alpha.}",
         "\\label{tab:ber}",
         "\\begin{tabular}{|l|l|l|r|r|r|r|}",
@@ -112,7 +131,7 @@ def export_joint_latex_table(results_joint, filename=None):
 
     lines = [
         "\\begin{table}[h!]",
-        "\\centering",
+        "\\centering\scriptsize",
         "\\caption{BER debido a ISI + CCI para $L=6$, SNR = SIR = 15 dB, y distintos valores de $\\alpha$.}",
         "\\label{tab:ber_joint}",
         "\\begin{tabular}{|l|l|r|r|r|r|r|}",
@@ -158,17 +177,14 @@ def truncate_pulse(base_pulse, t_max: float):
     return g_truncated
 
 
-def fmt(x): 
-    return f"{x:.6e}"
-
-
-
+        
+        
 
 def export_flat_latex_table_truncated(results, filename=None):
     """
-    Exporta BER (ISI) en subtables por SNR dentro de un table* para cada truncamiento.
+    Exporta BER (ISI) creando un table* independiente para cada
+    combinación de truncamiento y SNR.
     """
-
     pulse_rename = {
         "raised_cosine": "RC",
         "btrc": "BTRC",
@@ -176,46 +192,54 @@ def export_flat_latex_table_truncated(results, filename=None):
         "iplcp": "IPLCP"
     }
 
+
     # Extraer todos los valores de trunc y snr existentes
-    trunc_values = sorted({int(m.group("trunc"))
-                           for key in results
-                           for m in [re.match(
-                               r".+_SNR[\d\.]+_alpha[\d\.]+_trunc(?P<trunc>\d+)", key)]
-                           if m})
-    snr_values = sorted({float(m.group("snr"))
-                         for key in results
-                         for m in [re.match(
-                             r".+_SNR(?P<snr>[\d\.]+)_alpha[\d\.]+_trunc\d+", key)]
-                         if m})
+    trunc_values = sorted({
+        int(m.group("trunc"))
+        for key in results
+        for m in [re.match(
+            r".+_SNR[\d\.]+_alpha[\d\.]+_trunc(?P<trunc>\d+)", key)]
+        if m
+    })
+    snr_values = sorted({
+        float(m.group("snr"))
+        for key in results
+        for m in [re.match(
+            r".+_SNR(?P<snr>[\d\.]+)_alpha[\d\.]+_trunc\d+", key)]
+        if m
+    })
 
     lines = []
-    for trunc in trunc_values:
-        lines.append(r"\begin{table*}[h!]")
-        lines.append(r"\centering")
-        lines.append(f"\\caption{{BER ISI trunc=±{trunc} T para distintos SNR y $\\alpha$.}}")
-        lines.append(f"\\label{{tab:ber_isi_trunc{trunc}}}")
 
+    for trunc in trunc_values:
         for snr in snr_values:
-            lines.append(r"\begin{subtable}[t]{0.48\textwidth}")
+            lines.append(r"\begin{table*}[h!]")
             lines.append(r"\centering\scriptsize")
-            lines.append(f"\\caption{{SNR = {int(snr)} dB}}")
+            lines.append(
+                f"\\caption{{BER ISI trunc=±{trunc}\\,T, SNR={int(snr)}\\,dB y distintos $\\alpha$.}}"
+            )
+            lines.append(f"\\label{{tab:ber_isi_trunc{trunc}_snr{int(snr)}}}")
             lines.append(r"\begin{tabular}{|l|l|r|r|r|r|}")
             lines.append(r"\hline")
             lines.append(r"$\alpha$ & pulse & 0.05 & 0.10 & 0.20 & 0.25 \\")
             lines.append(r"\hline")
 
             # Filtrar y ordenar por alpha
-            entries = []
             pattern = re.compile(
                 rf"(?P<pulse>.+)_SNR{snr}_alpha(?P<alpha>[\d\.]+)_trunc{trunc}"
             )
+            entries = []
             for key, ber in results.items():
                 m = pattern.match(key)
                 if not m:
                     continue
                 alpha = float(m.group("alpha"))
                 p_lbl = pulse_rename.get(m.group("pulse"), m.group("pulse").upper())
-                row = f"{alpha:.2f} & {p_lbl} & " + " & ".join(fmt(v) for v in ber) + r" \\"
+                row = (
+                    f"{alpha:.2f} & {p_lbl} & "
+                    + " & ".join(fmt(v) for v in ber)
+                    + r" \\"
+                )
                 entries.append((alpha, row))
 
             for _, row in sorted(entries, key=lambda x: x[0]):
@@ -223,11 +247,8 @@ def export_flat_latex_table_truncated(results, filename=None):
 
             lines.append(r"\hline")
             lines.append(r"\end{tabular}")
-            lines.append(r"\end{subtable}%")
-            lines.append(r"\hfill")
-
-        lines.append(r"\end{table*}")
-        lines.append("")
+            lines.append(r"\end{table*}")
+            lines.append("")  # blank line between floats
 
     latex_code = "\n".join(lines)
     if filename:
@@ -235,14 +256,14 @@ def export_flat_latex_table_truncated(results, filename=None):
             f.write(latex_code)
     else:
         print(latex_code)
+
+
         
-        
-        
-        
+
 def export_cci_latex_table_truncated(results_cci, filename=None):
     """
     Exporta BER (CCI) en un table por cada truncamiento,
-    mostrando sólo pulse y alpha (SNR=15 dB, SIR=10 dB, L=2 constantes).
+    mostrando sólo pulse y alpha (SNR=15 dB, SIR=10 dB, L=2 constantes).
     """
 
     pulse_rename = {
@@ -331,7 +352,7 @@ def export_joint_latex_table_truncated(results_joint, filename=None):
     for trunc in trunc_values:
         lines.append(r"\begin{table}[h!]")
         lines.append(r"\centering\scriptsize")
-        lines.append(f"\\caption{{BER ISI+CCI trunc=±{trunc} T para SNR=SIR=15 dB, $L=6$.}}")
+        lines.append(f"\\caption{{BER ISI+CCI trunc=±{trunc} T para SNR=SIR=15 dB, $L=6$.}}")
         lines.append(f"\\label{{tab:ber_joint_trunc{trunc}}}")
         lines.append(r"\begin{tabular}{|l|l|r|r|r|r|}")
         lines.append(r"\hline")

@@ -41,7 +41,7 @@ pulse_kwargs_dict = {
 # 3. Cálculo de BER: ISI
 # ─────────────────────────────────────────────────────────────
 
-results = {}
+isi_results = {}
 
 for pulse, snr, alpha in product(pulse_list, snr_values, alpha_values):
     key = f"{pulse}_SNR{snr}_alpha{alpha}"
@@ -49,7 +49,7 @@ for pulse, snr, alpha in product(pulse_list, snr_values, alpha_values):
     kwargs = pulse_kwargs_dict.get(pulse, {})
     resolved_pulse = partial(base_pulse, **kwargs) if kwargs else base_pulse
 
-    results[key] = ber_isi_closed_form(
+    isi_results[key] = ber_isi_closed_form(
         pulse=resolved_pulse,
         alpha=alpha,
         snr_db=snr,
@@ -67,7 +67,7 @@ sir_values = [10.0, 20.0]
 L_values = [2, 6]
 snr = 15.0
 
-results_cci = {}
+cci_results = {}
 
 for pulse, sir, alpha, L in product(pulse_list, sir_values, alpha_values, L_values):
     key = f"{pulse}_SNR{snr}_SIR{sir}_alpha{alpha}_L{L}"
@@ -75,7 +75,7 @@ for pulse, sir, alpha, L in product(pulse_list, sir_values, alpha_values, L_valu
     kwargs = pulse_kwargs_dict.get(pulse, {})
     resolved_pulse = partial(base_pulse, **kwargs) if kwargs else base_pulse
 
-    results_cci[key] = ber_cci_closed_form(
+    cci_results[key] = ber_cci_closed_form(
         pulse=resolved_pulse,
         alpha=alpha,
         snr_db=snr,
@@ -92,7 +92,7 @@ for pulse, sir, alpha, L in product(pulse_list, sir_values, alpha_values, L_valu
 
 sir = 15.0
 L = 6
-results_joint = {}
+isi_cci_results = {}
 
 for pulse, alpha in product(pulse_list, alpha_values):
     key = f"{pulse}_SNR{snr}_SIR{sir}_alpha{alpha}_L{L}_joint"
@@ -100,7 +100,7 @@ for pulse, alpha in product(pulse_list, alpha_values):
     kwargs = pulse_kwargs_dict.get(pulse, {})
     resolved_pulse = partial(base_pulse, **kwargs) if kwargs else base_pulse
 
-    results_joint[key] = ber_cci_isi_closed_form(
+    isi_cci_results[key] = ber_cci_isi_closed_form(
         pulse=resolved_pulse,
         alpha=alpha,
         snr_db=snr,
@@ -112,25 +112,10 @@ for pulse, alpha in product(pulse_list, alpha_values):
         omega=omega
     )
 
-# ─────────────────────────────────────────────────────────────
-# 6. Exportación de resultados a LaTeX
-# ─────────────────────────────────────────────────────────────
-
-print("\n\n% === ISI ===\n")
-export_flat_latex_table(results)
-
-print("\n\n% === CCI ===\n")
-export_cci_latex_table(results_cci)
-
-print("\n\n% === ISI + CCI ===\n")
-export_joint_latex_table(results_joint)
 
 
 
-
-
-
-results = {}
+isi_trunc_results = {}
 snr = 10.0
 truncation_limits = [5.0, 10.0]
 
@@ -142,7 +127,7 @@ for t_max in truncation_limits:
         resolved_base = partial(base_pulse, **kwargs) if kwargs else base_pulse
         resolved_pulse = truncate_pulse(resolved_base, t_max)
 
-        results[key] = ber_isi_closed_form(
+        isi_trunc_results[key] = ber_isi_closed_form(
             pulse=resolved_pulse,
             alpha=alpha,
             snr_db=snr,
@@ -154,7 +139,7 @@ for t_max in truncation_limits:
 
 
 # Solo para SNR=15 dB, SIR=10 dB y L=2
-results_cci = {}
+cci_trunc_results = {}
 snr = 15.0
 sir = 10.0
 L = 2
@@ -167,7 +152,7 @@ for t_max in truncation_limits:
         resolved_base = partial(base_pulse, **kwargs) if kwargs else base_pulse
         resolved_pulse = truncate_pulse(resolved_base, t_max)
 
-        results_cci[key] = ber_cci_closed_form(
+        cci_trunc_results[key] = ber_cci_closed_form(
             pulse    = resolved_pulse,
             alpha    = alpha,
             snr_db   = snr,
@@ -179,7 +164,7 @@ for t_max in truncation_limits:
         )
 
 
-results_joint = {}
+isi_cci_trunc_results = {}
 snr = 15.0
 sir = 15.0
 L = 6
@@ -194,7 +179,7 @@ for t_max in truncation_limits:
         resolved_base = partial(base_pulse, **kwargs) if kwargs else base_pulse
         resolved_pulse = truncate_pulse(resolved_base, t_max)
 
-        results_joint[key] = ber_cci_isi_closed_form(
+        isi_cci_trunc_results[key] = ber_cci_isi_closed_form(
             pulse=resolved_pulse,
             alpha=alpha,
             snr_db=snr,
@@ -207,11 +192,15 @@ for t_max in truncation_limits:
         )
 
 
-print("\n\n% === ISI ===\n")
-export_flat_latex_table_truncated(results)
+# ─────────────────────────────────────────────────────────────
+# 6. Exportación de resultados a LaTeX
+# ─────────────────────────────────────────────────────────────
 
-print("\n\n% === CCI ===\n")
-export_cci_latex_table_truncated(results_cci)
 
-print("\n\n% === ISI + CCI ===\n")
-export_joint_latex_table_truncated(results_joint)
+export_flat_latex_table(isi_results)
+export_cci_latex_table(cci_results)
+export_joint_latex_table(isi_cci_results)
+
+export_flat_latex_table_truncated(isi_trunc_results)
+export_cci_latex_table_truncated(cci_trunc_results)
+export_joint_latex_table_truncated(isi_cci_trunc_results)
