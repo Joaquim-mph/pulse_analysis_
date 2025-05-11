@@ -1,101 +1,21 @@
 from itertools import product
 from functools import partial
+import numpy as np
 from ber_toolbox import (
     _resolve_pulse,
     ber_isi_closed_form,
     ber_cci_closed_form,
     ber_cci_isi_closed_form
 )
-
-# ─────────────────────────────────────────────────────────────
-# 1. Funciones para exportar tablas LaTeX
-# ─────────────────────────────────────────────────────────────
-
-def export_flat_latex_table(results, filename=None):
-    """Exporta resultados BER (solo ISI) en formato LaTeX plano."""
-    def fmt(x): return f"{x:.6e}"
-    pulse_rename = {"raised_cosine": "RC", "btrc": "BTRC", "elp": "ELP", "iplcp": "IPLCP"}
-
-    lines = [
-        "\\begin{table}[h!]",
-        "\\centering",
-        "\\caption{BER para diferentes valores de SNR y alpha.}",
-        "\\label{tab:ber}",
-        "\\begin{tabular}{|l|l|l|r|r|r|r|}",
-        "\\hline",
-        "snr & alpha & pulse &      0.05 &       0.1 &       0.2 &      0.25 \\\\",
-        "\\hline"
-    ]
-
-    for key, ber in results.items():
-        parts = key.rsplit("_", maxsplit=2)
-        pulse, snr_str, alpha_str = parts[0], parts[1][3:], parts[2][5:]
-        pulse_label = pulse_rename.get(pulse, pulse.upper())
-        row = f"{int(float(snr_str))} & {alpha_str} & {pulse_label} & " + " & ".join(fmt(v) for v in ber) + " \\\\"
-        lines.append(row)
-
-    lines += ["\\hline", "\\end{tabular}", "\\end{table}"]
-
-    latex_code = "\n".join(lines)
-    print(latex_code) if filename is None else open(filename, "w").write(latex_code)
-
-
-def export_cci_latex_table(results_cci, filename=None):
-    """Exporta resultados BER para CCI en formato LaTeX."""
-    def fmt(x): return f"{x:.6e}"
-    pulse_rename = {"raised_cosine": "RC", "btrc": "BTRC", "elp": "ELP", "iplcp": "IPLCP"}
-
-    lines = [
-        "\\begin{table}[h!]",
-        "\\centering",
-        "\\caption{BER debido a CCI para diferentes valores de $\\alpha$, SIR y $L$.}",
-        "\\label{tab:ber_cci}",
-        "\\begin{tabular}{|l|l|l|l|l|r|r|r|r|}",
-        "\\hline",
-        "SNR & SIR & $\\alpha$ & $L$ & pulse & 0.05 & 0.10 & 0.20 & 0.25 \\\\",
-        "\\hline"
-    ]
-
-    for key, ber in results_cci.items():
-        parts = key.rsplit("_", maxsplit=4)
-        pulse, _, sir_str, alpha_str, L_str = parts
-        pulse_label = pulse_rename.get(pulse, pulse.upper())
-        row = f"15 & {sir_str[3:]} & {alpha_str[5:]} & {L_str[1:]} & {pulse_label} & " + " & ".join(fmt(v) for v in ber) + " \\\\"
-        lines.append(row)
-
-    lines += ["\\hline", "\\end{tabular}", "\\end{table}"]
-
-    latex_code = "\n".join(lines)
-    print(latex_code) if filename is None else open(filename, "w").write(latex_code)
-
-
-def export_joint_latex_table(results_joint, filename=None):
-    """Exporta resultados BER para ISI + CCI en formato LaTeX."""
-    def fmt(x): return f"{x:.6e}"
-    pulse_rename = {"raised_cosine": "RC", "btrc": "BTRC", "elp": "ELP", "iplcp": "IPLCP"}
-
-    lines = [
-        "\\begin{table}[h!]",
-        "\\centering",
-        "\\caption{BER debido a ISI + CCI para $L=6$, SNR = SIR = 15 dB, y distintos valores de $\\alpha$.}",
-        "\\label{tab:ber_joint}",
-        "\\begin{tabular}{|l|l|r|r|r|r|r|}",
-        "\\hline",
-        "pulse & $\\alpha$ & 0.05 & 0.10 & 0.20 & 0.25 \\\\",
-        "\\hline"
-    ]
-
-    for key, ber in results_joint.items():
-        parts = key.rsplit("_", maxsplit=5)
-        pulse, _, _, alpha_str, _, _ = parts
-        pulse_label = pulse_rename.get(pulse, pulse.upper())
-        row = f"{pulse_label} & {alpha_str[5:]} & " + " & ".join(fmt(v) for v in ber) + " \\\\"
-        lines.append(row)
-
-    lines += ["\\hline", "\\end{tabular}", "\\end{table}"]
-
-    latex_code = "\n".join(lines)
-    print(latex_code) if filename is None else open(filename, "w").write(latex_code)
+from latex_utils import (
+    export_flat_latex_table,
+    export_cci_latex_table,
+    export_joint_latex_table,
+    truncate_pulse,
+    export_cci_latex_table_truncated,
+    export_flat_latex_table_truncated,
+    export_joint_latex_table_truncated
+)
 
 # ─────────────────────────────────────────────────────────────
 # 2. Parámetros globales y funciones registradas
@@ -204,3 +124,94 @@ export_cci_latex_table(results_cci)
 
 print("\n\n% === ISI + CCI ===\n")
 export_joint_latex_table(results_joint)
+
+
+
+
+
+
+results = {}
+snr = 10.0
+truncation_limits = [5.0, 10.0]
+
+for t_max in truncation_limits:
+    for pulse, alpha in product(pulse_list, alpha_values):
+        key = f"{pulse}_SNR{snr}_alpha{alpha}_trunc{int(t_max)}"
+        base_pulse = _resolve_pulse(pulse)
+        kwargs = pulse_kwargs_dict.get(pulse, {})
+        resolved_base = partial(base_pulse, **kwargs) if kwargs else base_pulse
+        resolved_pulse = truncate_pulse(resolved_base, t_max)
+
+        results[key] = ber_isi_closed_form(
+            pulse=resolved_pulse,
+            alpha=alpha,
+            snr_db=snr,
+            offsets=offsets,
+            nbits=nbits,
+            M=M,
+            omega=omega
+        )
+
+
+# Solo para SNR=15 dB, SIR=10 dB y L=2
+results_cci = {}
+snr = 15.0
+sir = 10.0
+L = 2
+
+for t_max in truncation_limits:
+    for pulse, alpha in product(pulse_list, alpha_values):
+        key = f"{pulse}_SNR{snr}_SIR{sir}_alpha{alpha}_L{L}_trunc{int(t_max)}"
+        base_pulse = _resolve_pulse(pulse)
+        kwargs     = pulse_kwargs_dict.get(pulse, {})
+        resolved_base = partial(base_pulse, **kwargs) if kwargs else base_pulse
+        resolved_pulse = truncate_pulse(resolved_base, t_max)
+
+        results_cci[key] = ber_cci_closed_form(
+            pulse    = resolved_pulse,
+            alpha    = alpha,
+            snr_db   = snr,
+            sir_db   = sir,
+            L        = L,
+            offsets  = offsets,
+            M        = M,
+            omega    = omega
+        )
+
+
+results_joint = {}
+snr = 15.0
+sir = 15.0
+L = 6
+# Only for alpha=0.22 
+alpha_subset = [0.22]
+
+for t_max in truncation_limits:
+    for pulse, alpha in product(pulse_list, alpha_subset):
+        key = f"{pulse}_SNR{snr}_SIR{sir}_alpha{alpha}_L{L}_joint_trunc{int(t_max)}"
+        base_pulse = _resolve_pulse(pulse)
+        kwargs = pulse_kwargs_dict.get(pulse, {})
+        resolved_base = partial(base_pulse, **kwargs) if kwargs else base_pulse
+        resolved_pulse = truncate_pulse(resolved_base, t_max)
+
+        results_joint[key] = ber_cci_isi_closed_form(
+            pulse=resolved_pulse,
+            alpha=alpha,
+            snr_db=snr,
+            sir_db=sir,
+            L=L,
+            nbits=nbits,
+            offsets=offsets,
+            M=M,
+            omega=omega
+        )
+
+
+print("\n\n% === ISI ===\n")
+export_flat_latex_table_truncated(results)
+
+print("\n\n% === CCI ===\n")
+export_cci_latex_table_truncated(results_cci)
+
+print("\n\n% === ISI + CCI ===\n")
+export_joint_latex_table_truncated(results_joint)
