@@ -1,7 +1,7 @@
 import re
 import numpy as np
 
-PULSE_RENAME = {
+pulse_rename = {
     "raised_cosine": "RC",
     "btrc":         "BTRC",
     "elp":          "ELP",
@@ -27,32 +27,52 @@ def _parse_key(key, pattern):
 
 def export_flat_latex_table(results, filename=None):
     """Exporta resultados BER (solo ISI) en formato LaTeX plano."""
-    pulse_rename = {"raised_cosine": "RC", "btrc": "BTRC", "elp": "ELP", "iplcp": "IPLCP"}
 
+    # Recolectar y parsear las tuplas (snr, alpha, pulse_label, ber)
+    entries = []
+    for key, ber in results.items():
+        # key con formato "pulse_SNR{snr}_alpha{alpha}"
+        parts = key.rsplit("_", maxsplit=2)
+        pulse = parts[0]
+        snr = float(parts[1][3:])
+        alpha = float(parts[2][5:])
+        pulse_label = pulse_rename.get(pulse, pulse.upper())
+        entries.append((snr, alpha, pulse_label, ber))
+
+    # Ordenar primero por snr ascendente, luego por alpha ascendente
+    entries.sort(key=lambda x: (x[0], x[1]))
+
+    # Encabezado de la tabla
     lines = [
         "\\begin{table}[h!]",
-        "\\centering\scriptsize",
-        "\\caption{BER para diferentes valores de SNR y alpha.}",
+        "\\centering\\scriptsize",
+        "\\caption{BER para diferentes valores de SNR y $\\alpha$.}",
         "\\label{tab:ber}",
         "\\begin{tabular}{|l|l|l|r|r|r|r|}",
         "\\hline",
-        "snr & alpha & pulse &      0.05 &       0.1 &       0.2 &      0.25 \\\\",
+        "snr & $\\alpha$ & pulse & 0.05 & 0.10 & 0.20 & 0.25 \\\\",
         "\\hline"
     ]
 
-    for key, ber in results.items():
-        parts = key.rsplit("_", maxsplit=2)
-        pulse, snr_str, alpha_str = parts[0], parts[1][3:], parts[2][5:]
-        pulse_label = pulse_rename.get(pulse, pulse.upper())
-        row = f"{int(float(snr_str))} & {alpha_str} & {pulse_label} & " + " & ".join(fmt(v) for v in ber) + " \\\\"
+    # Rellenar filas en el orden deseado
+    for snr, alpha, pulse_label, ber in entries:
+        row = (
+            f"{int(snr)} & {alpha:.2f} & {pulse_label} & "
+            + " & ".join(fmt(v) for v in ber)
+            + " \\\\"
+        )
         lines.append(row)
 
+    # Pie de tabla
     lines += ["\\hline", "\\end{tabular}", "\\end{table}"]
 
     latex_code = "\n".join(lines)
-    print(latex_code) if filename is None else open(filename, "w").write(latex_code)
-
-
+    if filename:
+        with open(filename, "w") as f:
+            f.write(latex_code)
+    else:
+        print(latex_code)
+        
 
 def export_cci_latex_table(results_cci, filename=None):
     """

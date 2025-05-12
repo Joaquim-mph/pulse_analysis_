@@ -4,12 +4,6 @@ from plot_utils import (
     plot_eye_traces
 )
 from styles import set_plot_style
-from ber_toolbox import (
-    _resolve_pulse,
-    ber_isi_closed_form,
-    ber_cci_closed_form,
-    ber_cci_isi_closed_form
-)
 
 
 # ──────────────────────────────────────────────────────────────
@@ -22,7 +16,6 @@ span_T   = 10
 ovs      = 20
 nfft     = 2048
 T        = 1.0
-alpha    = 0.35
 normalize = "amplitude"
 freq_axis = "fB"  # Can be "fT" or "fB"
 
@@ -109,20 +102,6 @@ plot_pulse_markers(
     freq_axis_label="f/B",
     f_db_xlim=(-10,10)
 )
-
-
-# ──────────────────────────────────────────────────────────────
-# 4. Closed‑form BER for Raised‑Cosine
-snr_db = 10.0
-offsets = (0.05, 0.10, 0.20, 0.25)
-ber_cf = ber_isi_closed_form(
-    pulse="raised_cosine",
-    alpha=alpha,
-    snr_db=snr_db,
-    offsets=offsets,
-)
-print("Craig BER (Raised Cosine):", ber_cf)
-
 
 
     
