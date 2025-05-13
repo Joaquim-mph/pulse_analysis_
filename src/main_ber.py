@@ -16,6 +16,7 @@ from latex_utils import (
     export_flat_latex_table_truncated,
     export_joint_latex_table_truncated
 )
+from pulse_table_utils import results_to_df
 
 # ─────────────────────────────────────────────────────────────
 # 2. Parámetros globales y funciones registradas
@@ -196,11 +197,16 @@ for t_max in truncation_limits:
 # 6. Exportación de resultados a LaTeX
 # ─────────────────────────────────────────────────────────────
 
+df = results_to_df(isi_results)
 
-export_flat_latex_table(isi_results)
-export_cci_latex_table(cci_results)
-export_joint_latex_table(isi_cci_results)
 
-export_flat_latex_table_truncated(isi_trunc_results)
-export_cci_latex_table_truncated(cci_trunc_results)
-export_joint_latex_table_truncated(isi_cci_trunc_results)
+print(df)
+
+
+# export_flat_latex_table(isi_results)
+# export_cci_latex_table(cci_results)
+# export_joint_latex_table(isi_cci_results)
+
+# export_flat_latex_table_truncated(isi_trunc_results)
+# export_cci_latex_table_truncated(cci_trunc_results)
+# export_joint_latex_table_truncated(isi_cci_trunc_results)

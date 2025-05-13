@@ -13,12 +13,13 @@ pulse_rename = {
 def fmt(x):
     return f"{x:.2e}"
 
-def truncate_pulse(base_pulse, t_max: float):
-    def g_truncated(t, alpha):
+
+def truncate_pulse(base_pulse, t_max):
+    def g_trunc(t, alpha):
         out = base_pulse(t, alpha)
-        out[np.abs(t) > t_max] = 0.0
-        return out
-    return g_truncated
+        return out * (np.abs(t) <= t_max)
+    return g_trunc
+
 
 def _parse_key(key, pattern):
     m = re.match(pattern, key)
