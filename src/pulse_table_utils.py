@@ -4,7 +4,7 @@ import re
 import numpy as np
 import pandas as pd
 from pathlib import Path
-import itertools
+
 
 # ─── 1. CONSTANTS & PRECOMPILED REGEXES ────────────────────────────────────────
 
@@ -29,7 +29,6 @@ _RE_GENERIC = re.compile(
     r"(?:_trunc(?P<trunc>\d+))?"       
     r"$"
 )
-
 
 
 def truncate_pulse(base_pulse, t_max):

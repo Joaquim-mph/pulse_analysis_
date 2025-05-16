@@ -1,21 +1,12 @@
 from itertools import product
 from functools import partial
-import numpy as np
+#import numpy as np
 from ber_toolbox import (
     _resolve_pulse,
     ber_isi_closed_form,
     ber_cci_closed_form,
     ber_cci_isi_closed_form
 )
-from latex_utils import (
-    export_flat_latex_table,
-    export_cci_latex_table,
-    export_joint_latex_table,
-    export_cci_latex_table_truncated,
-    export_flat_latex_table_truncated,
-    export_joint_latex_table_truncated
-)
-
 
 from pulse_table_utils import truncate_pulse, results_to_df, latex_table
 

@@ -16,22 +16,22 @@ N. C. Beaulieu (2007).
 
 1. ISI-Only Case — `ber_isi_closed_form`
 ----------------------------------------
-Implements Craig’s series expression for a BPSK system with ISI:
+Implements Craig's series expression for a BPSK system with ISI:
 
-    Pe = ½ – (2/π) Σ_{m odd} e^{-(mω)²/2} · sin(mω·g₀) / m · Π_k cos(mω·g_k)
+    Pe = ½ - (2/π) Σ_{m odd} e^{-(mω)²/2} · sin(mω·g₀) / m · Π_k cos(mω·g_k)
 
 where:
   • g₀ = coeff · g(τ)           → main-tap contribution
-  • g_k = coeff · a_k·g(τ−k)    → ISI taps (a_k ∈ {±1})
+  • g_k = coeff · a_k·g(τ-k)    → ISI taps (a_k ∈ {±1})
   • ω  = noise std (default 0.10)
 
 ─────────────────────────────────────────────────────────────────────────────
 
 2. CCI-Only Case — `ber_cci_closed_form`
 ----------------------------------------
-Implements Beaulieu’s approximation for BPSK with L co-channel interferers:
+Implements Beaulieu's approximation for BPSK with L co-channel interferers:
 
-    Pe = ½ – (2/π) Σ_{m odd} e^{-(mω)²/2} · sin(mω·g₀) / m · Π_i J₀(mω·r_i)
+    Pe = ½ - (2/π) Σ_{m odd} e^{-(mω)²/2} · sin(mω·g₀) / m · Π_i J₀(mω·r_i)
 
 where:
   • g₀ = coeff · g(τ)              → desired main tap
@@ -42,9 +42,9 @@ where:
 
 3. ISI + CCI Case — `ber_cci_isi_closed_form`
 ---------------------------------------------
-Combines Craig’s ISI and Beaulieu’s CCI approximations:
+Combines Craig's ISI and Beaulieu's CCI approximations:
 
-    Pe = ½ – (2/π) Σ_{m odd} e^{-(mω)²/2} · sin(mω·g₀) / m
+    Pe = ½ - (2/π) Σ_{m odd} e^{-(mω)²/2} · sin(mω·g₀) / m
                           · Π_k cos(mω·g_k) · Π_i J₀(mω·r_i)
 
 ─────────────────────────────────────────────────────────────────────────────
@@ -56,11 +56,11 @@ In all cases:
 """
 
 from typing import Callable, Sequence, Union, Optional
-import importlib
 import numpy as np
 from numpy.typing import NDArray
 from scipy.special import j0  
 from pulse_toolbox import PULSE_FNS
+
 
 def _resolve_pulse(
     pulse: Union[str, Callable[[NDArray[np.float64], float], NDArray[np.float64]]]
@@ -73,7 +73,6 @@ def _resolve_pulse(
             raise ValueError(f"Unknown pulse name '{pulse}' in PULSE_FNS.")
         return PULSE_FNS[pulse]
     return pulse
-
 
 
 def ber_isi_closed_form(
@@ -89,7 +88,7 @@ def ber_isi_closed_form(
 ) -> NDArray[np.float64]:
     """
     Computes the closed-form BER due to inter-symbol interference (ISI)
-    using Craig’s series formula.
+    using Craig's series formula.
 
     Parameters
     ----------
@@ -227,7 +226,7 @@ def ber_cci_isi_closed_form(
 ) -> NDArray[np.float64]:
     """
     Computes the closed-form BER due to both ISI and CCI,
-    combining the expressions from Craig’s method and Beaulieu.
+    combining the expressions from Craig's method and Beaulieu.
 
     Parameters
     ----------
