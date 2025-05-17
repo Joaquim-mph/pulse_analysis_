@@ -8,7 +8,7 @@ from ber_toolbox import (
     ber_cci_isi_closed_form
 )
 
-from pulse_table_utils import truncate_pulse, results_to_df, latex_table
+from pulse_table_utils import truncate_pulse, results_to_df, latex_table, save_df_to_csv
 
 # ─────────────────────────────────────────────────────────────
 # 2. Parámetros globales y funciones registradas
@@ -196,63 +196,61 @@ df_isi_truncated = results_to_df(isi_trunc_results)
 df_cci_truncated =results_to_df(cci_trunc_results)
 df_isi_cci_truncated = results_to_df(isi_cci_trunc_results)
 
-# # suppose your DataFrame is called df
-# column_names = [
-#     "pulse","snr","sir","alpha","L","trunc","joint",
-#     "0.05","0.10","0.20","0.25"
-# ]
 
-# # map your ber05→0.05 etc
-# df_for_latex = df_isi.rename(
-#     columns={"ber05":"0.05","ber10":"0.10","ber20":"0.20","ber25":"0.25"}
-# )
 
-# latex_str = df_for_latex.to_latex(
-#     index=False,
-#     header=column_names,
-#     float_format="%.2e",                  # scientific notation, two decimals
-#     column_format="|l|r|r|r|r|r|c|r|r|r|r|",
-#     caption="My BER results",
-#     label="tab:ber_all",
-#     escape=False
-# )
 
-# print(latex_str)
 latex_table(
     df_isi,
-    caption="BER Results (None columns omitted)",
-    label="tab:ber_auto"
+    caption="BER ISI Results (None columns omitted)",
+    label="tab:ber_isi"
 )
 print()
+
 latex_table(
     df_cci,
-    caption="BER Results (None columns omitted)",
-    label="tab:ber_auto"
+    caption="BER CCI Results (None columns omitted)",
+    label="tab:ber_cci"
 )
 print()
+
 latex_table(
     df_isi_cci,
-    caption="BER Results (None columns omitted)",
-    label="tab:ber_auto"
+    caption="BER ISI+CCI Results (None columns omitted)",
+    label="tab:ber_isi_cci"
 )
 print()
+
 latex_table(
     df_isi_truncated,
-    caption="BER Results (None columns omitted)",
-    label="tab:ber_auto"
+    caption="BER ISI Truncated Results (None columns omitted)",
+    label="tab:ber_isi_truncated"
 )
 print()
+
 latex_table(
     df_cci_truncated,
-    caption="BER Results (None columns omitted)",
-    label="tab:ber_auto"
+    caption="BER CCI Truncated Results (None columns omitted)",
+    label="tab:ber_cci_truncated"
 )
 print()
+
 latex_table(
     df_isi_cci_truncated,
-    caption="BER Results (None columns omitted)",
-    label="tab:ber_auto"
+    caption="BER ISI+CCI Truncated Results (None columns omitted)",
+    label="tab:ber_isi_cci_truncated"
 )
+
+
+
+
+save_df_to_csv(df_isi, "isi.csv")
+save_df_to_csv(df_cci, "cci.csv")
+save_df_to_csv(df_isi, "isi_cci.csv")
+
+save_df_to_csv(df_isi_truncated, "isi_truncated,.csv")
+save_df_to_csv(df_cci_truncated, "cci_truncated,.csv")
+save_df_to_csv(df_isi_cci_truncated, "isi_cci_truncated,.csv")
+
 
 # print(df_isi)
 # print()

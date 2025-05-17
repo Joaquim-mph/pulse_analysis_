@@ -10,10 +10,10 @@ from pathlib import Path
 
 # single source of truth for how we abbreviate pulses
 PULSE_RENAME: dict[str,str] = {
-    "raised_cosine": r"\bfseries RC",
-    "btrc":          r"\bfseries BTRC",
-    "elp":           r"\bfseries ELP",
-    "iplcp":         r"\bfseries IPLCP",
+    "raised_cosine": r"RC",
+    "btrc":          r"BTRC",
+    "elp":           r"ELP",
+    "iplcp":         r"IPLCP",
 }
 
 # generic parser regex: captures
@@ -90,6 +90,38 @@ def results_to_df(results: dict) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+
+
+def save_df_to_csv(
+    df: pd.DataFrame,
+    filename: str,
+    folder: str = "results"
+) -> None:
+    """
+    Save a DataFrame to CSV inside `folder`, dropping columns that are entirely
+    None/NaN and turning any remaining None/NaN into blank cells. Creates the
+    folder if it doesn't exist. Columns in `snr`, `sir`, `alpha`, `L` will be
+    moved to the front if they exist. Rows will be sorted by these columns
+    if present.
+    """
+    # Ensure the output folder exists
+    out_dir = Path(folder)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Drop fully-empty columns and blank out remaining NAs
+    df_clean = df.dropna(axis=1, how="all").fillna("")
+
+    # Reorder columns: bring ['snr','sir','alpha','L'] to front, if present
+    priority = ["snr", "sir", "alpha", "L"]
+
+    # Sort rows by whichever of snr, sir, alpha, L remain
+    sort_order = [c for c in priority if c in df_clean.columns]
+    if sort_order:
+        df_clean = df_clean.sort_values(by=sort_order)
+
+    # Write to CSV in the specified folder
+    csv_path = out_dir / filename
+    df_clean.to_csv(csv_path, index=False)
 
 
 
