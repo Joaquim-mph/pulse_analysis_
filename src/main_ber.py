@@ -99,19 +99,19 @@ isi_cci_trunc_keys = [
 
 # 5) actually run them
 common = dict(offsets=offsets, M=M, omega=omega)
-isi_results         = run_ber(ber_isi_closed_form,      isi_keys,         **common)
-cci_results         = run_ber(ber_cci_closed_form,      cci_keys,         **common)
-isi_cci_results     = run_ber(ber_cci_isi_closed_form, isi_cci_keys,     **common)
-isi_trunc_results   = run_ber(ber_isi_closed_form,      isi_trunc_keys,   **common)
-cci_trunc_results   = run_ber(ber_cci_closed_form,      cci_trunc_keys,   **common)
+isi_results           = run_ber(ber_isi_closed_form,      isi_keys,         **common)
+cci_results           = run_ber(ber_cci_closed_form,      cci_keys,         **common)
+isi_cci_results       = run_ber(ber_cci_isi_closed_form, isi_cci_keys,     **common)
+isi_trunc_results     = run_ber(ber_isi_closed_form,      isi_trunc_keys,   **common)
+cci_trunc_results     = run_ber(ber_cci_closed_form,      cci_trunc_keys,   **common)
 isi_cci_trunc_results = run_ber(ber_cci_isi_closed_form, isi_cci_trunc_keys, **common)
 
 # 6) export as before
-df_isi              = results_to_df(isi_results)
-df_cci              = results_to_df(cci_results)
-df_isi_cci          = results_to_df(isi_cci_results)
-df_isi_truncated    = results_to_df(isi_trunc_results)
-df_cci_truncated    = results_to_df(cci_trunc_results)
+df_isi               = results_to_df(isi_results)
+df_cci               = results_to_df(cci_results)
+df_isi_cci           = results_to_df(isi_cci_results)
+df_isi_truncated     = results_to_df(isi_trunc_results)
+df_cci_truncated     = results_to_df(cci_trunc_results)
 df_isi_cci_truncated = results_to_df(isi_cci_trunc_results)
 
 print()
