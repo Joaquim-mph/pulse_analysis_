@@ -5,6 +5,19 @@ from typing import Callable, Dict
 PULSE_FNS: Dict[str, Callable[..., np.ndarray]] = {}
 
 def register(name: str):
+    """
+    Register a pulse-generation function under a given name.
+
+    Parameters
+    ----------
+    name : str
+        Identifier to map the decorated function in PULSE_FNS.
+
+    Returns
+    -------
+    decorator : callable
+        Decorator that adds the function to PULSE_FNS and returns it.
+    """
     def decorator(fn: Callable[..., np.ndarray]) -> Callable[..., np.ndarray]:
         PULSE_FNS[name] = fn
         return fn
@@ -14,7 +27,21 @@ def register(name: str):
 @register('raised_cosine')
 def raised_cosine(t: np.ndarray, alpha: float = 0.35, T: float = 1.0) -> np.ndarray:
     """
-    p_RC(t) = sinc(t/T) * cos(2παt/T) / (1 - 4α² (t/T)²).
+    Compute the raised-cosine Nyquist pulse at times t.
+
+    Parameters
+    ----------
+    t : np.ndarray
+        Time samples.
+    alpha : float
+        Roll-off factor.
+    T : float
+        Symbol period.
+
+    Returns
+    -------
+    np.ndarray
+        Pulse values p_RC(t) = sinc(t/T) · cos(π α t / T) / (1 - 4 α² (t/T)²).
     """
     t = np.asarray(t, dtype=float)
     sinc_part = np.sinc(t / T)
@@ -27,7 +54,21 @@ def raised_cosine(t: np.ndarray, alpha: float = 0.35, T: float = 1.0) -> np.ndar
 @register('btrc')
 def btrc_pulse(t: np.ndarray, alpha: float = 0.35, T: float = 1.0) -> np.ndarray:
     """
-    BTRC pulse as defined in the referenced paper.
+    Compute the Better-Than-Nyquist (BTRC) pulse.
+
+    Parameters
+    ----------
+    t : np.ndarray
+        Time samples.
+    alpha : float
+        Roll-off parameter.
+    T : float
+        Symbol period.
+
+    Returns
+    -------
+    np.ndarray
+        BTRC pulse waveform as defined in the reference.
     """
     t = np.asarray(t, dtype=float)
     pi = np.pi
@@ -46,29 +87,53 @@ def btrc_pulse(t: np.ndarray, alpha: float = 0.35, T: float = 1.0) -> np.ndarray
 
 @register('elp')
 def elp_pulse(t: np.ndarray, alpha: float = 0.35, beta: float = 0.1, T: float = 1.0) -> np.ndarray:
-    tT = t / T
-    return np.exp(-np.pi * beta / 2 * tT**2) * np.sinc(tT) * np.sinc(alpha * tT)
+    """
+    Compute the exponential-linear pulse (ELP) in baseband.
+
+    Parameters
+    ----------
+    t : np.ndarray
+        Time samples.
+    alpha : float
+        Roll-off factor.
+    beta : float
+        Gaussian envelope parameter.
+    T : float
+        Symbol period.
+
+    Returns
+    -------
+    np.ndarray
+        ELP waveform = exp(−π β/2 (t/T)²) · sinc(t/T) · sinc(α t/T).
+    """
+    tau = t / T
+    return np.exp(-np.pi * beta / 2 * tau**2) * np.sinc(tau) * np.sinc(alpha * tau)
 
 
 @register('iplcp')
 def iplcp_pulse(t: np.ndarray, alpha: float = 0.35, mu: float = 1.6, gamma: float = 1.0, epsilon: float = 0.1, T: float = 1.0) -> np.ndarray:
     """
-    Time-domain IPLCP pulse, as defined in the equation using normalized time τ = t/T.
+    Compute the IPLCP pulse with spectral shaping and Gaussian envelope.
 
     Parameters
     ----------
     t : np.ndarray
-        Time axis (in seconds).
+        Time samples.
     alpha : float
         Roll-off factor.
     mu : float
-        Linear shaping parameter.
+        Linear weighting parameter.
     gamma : float
-        Exponent for spectral shaping.
+        Spectral shaping exponent.
     epsilon : float
-        Gaussian envelope control.
+        Envelope attenuation factor.
     T : float
         Symbol period.
+
+    Returns
+    -------
+    np.ndarray
+        Time-domain IPLCP waveform normalized at t = 0.
     """
     t = np.asarray(t, dtype=float)
     tau = t / T

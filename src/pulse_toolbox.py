@@ -7,6 +7,7 @@ def t_axis(
     oversample: int = 8,
     T: float = 1.0
 ) -> Tuple[np.ndarray, float]:
+    """Return a centered time vector and its sampling interval (dt)."""
     if not isinstance(oversample, int) or oversample <= 0:
         raise ValueError(f"oversample must be a positive integer, got {oversample}")
     dt = T / oversample
@@ -15,11 +16,13 @@ def t_axis(
 
 
 def _normalize_energy_continuous(h: np.ndarray, dt: float) -> np.ndarray:
-    energy = np.trapz(h**2, dx=dt)
+    """Scale h so its continuous‐time energy (∫h² dt) ≈ 1, if energy >1e-12."""
+    energy = np.trapezoid(h**2, dx=dt)
     return h / np.sqrt(energy) if energy > 1e-12 else h
 
 
 def _normalize_amplitude(h: np.ndarray) -> np.ndarray:
+    """Scale h so its peak absolute value is 1, if max|h| >1e-12."""
     max_val = np.max(np.abs(h))
     return h / max_val if max_val > 1e-12 else h
 
@@ -79,7 +82,7 @@ def compute_pulse(
         if normalize == 'continuous':
             if dt is None:
                 raise ValueError("'dt' required for continuous normalization; call t_axis first.")
-            energy = np.trapz(h**2, dx=dt)
+            energy = np.trapezoid(h**2, dx=dt)
             h = _normalize_energy_continuous(h, dt)
         elif normalize == 'amplitude':
             energy = np.sum(h**2)
