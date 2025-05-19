@@ -14,11 +14,6 @@ def t_axis(
     return t, dt
 
 
-def _normalize_energy_discrete(h: np.ndarray) -> np.ndarray:
-    energy = np.sum(h**2)
-    return h / np.sqrt(energy) if energy > 1e-12 else h
-
-
 def _normalize_energy_continuous(h: np.ndarray, dt: float) -> np.ndarray:
     energy = np.trapz(h**2, dx=dt)
     return h / np.sqrt(energy) if energy > 1e-12 else h
@@ -81,10 +76,7 @@ def compute_pulse(
     energy = None
 
     if normalize:
-        if normalize == 'discrete':
-            energy = np.sum(h**2)
-            h = _normalize_energy_discrete(h)
-        elif normalize == 'continuous':
+        if normalize == 'continuous':
             if dt is None:
                 raise ValueError("'dt' required for continuous normalization; call t_axis first.")
             energy = np.trapz(h**2, dx=dt)
