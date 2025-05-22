@@ -1,0 +1,9 @@
+pulse,snr,sir,alpha,L,trunc,joint,ber05,ber10,ber20,ber25
+\bfseries RC,15.0,15.0,0.22,6,5,False,2.66e-07,7.21e-06,1.60e-03,9.24e-03
+\bfseries BTRC,15.0,15.0,0.22,6,5,False,1.99e-07,3.74e-06,6.95e-04,4.72e-03
+\bfseries ELP,15.0,15.0,0.22,6,5,False,1.32e-07,1.48e-06,1.87e-04,1.45e-03
+\bfseries IPLCP,15.0,15.0,0.22,6,5,False,4.97e-08,1.19e-07,1.83e-06,9.28e-06
+\bfseries RC,15.0,15.0,0.22,6,10,False,2.66e-07,7.25e-06,1.61e-03,9.28e-03
+\bfseries BTRC,15.0,15.0,0.22,6,10,False,2.02e-07,3.86e-06,7.28e-04,4.90e-03
+\bfseries ELP,15.0,15.0,0.22,6,10,False,1.32e-07,1.48e-06,1.87e-04,1.45e-03
+\bfseries IPLCP,15.0,15.0,0.22,6,10,False,4.97e-08,1.19e-07,1.83e-06,9.28e-06

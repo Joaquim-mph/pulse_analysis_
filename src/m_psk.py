@@ -1,5 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from styles import set_plot_style
+import scienceplots
+
+set_plot_style("prism_rain")
 
 def plot_psk_constellation(M, title, ax, radius=1.0, rotation=0.0):
     """Plot an M-PSK constellation diagram with optional rotation (in radians)."""

@@ -1,0 +1,13 @@
+pulse,snr,alpha,trunc,joint,ber05,ber10,ber20,ber25
+\bfseries RC,10.0,0.22,10,False,1.09e-03,2.41e-03,1.46e-02,3.12e-02
+\bfseries BTRC,10.0,0.22,10,False,1.04e-03,2.12e-03,1.18e-02,2.55e-02
+\bfseries ELP,10.0,0.22,10,False,9.76e-04,1.73e-03,8.26e-03,1.81e-02
+\bfseries IPLCP,10.0,0.22,10,False,8.29e-04,9.94e-04,2.14e-03,3.74e-03
+\bfseries RC,10.0,0.35,10,False,1.03e-03,2.03e-03,1.10e-02,2.39e-02
+\bfseries BTRC,10.0,0.35,10,False,9.71e-04,1.70e-03,7.99e-03,1.74e-02
+\bfseries ELP,10.0,0.35,10,False,9.39e-04,1.54e-03,6.61e-03,1.44e-02
+\bfseries IPLCP,10.0,0.35,10,False,8.22e-04,9.60e-04,1.92e-03,3.27e-03
+\bfseries RC,10.0,0.50,10,False,9.73e-04,1.71e-03,8.08e-03,1.76e-02
+\bfseries BTRC,10.0,0.50,10,False,9.09e-04,1.39e-03,5.44e-03,1.19e-02
+\bfseries ELP,10.0,0.50,10,False,8.99e-04,1.34e-03,5.04e-03,1.10e-02
+\bfseries IPLCP,10.0,0.50,10,False,8.13e-04,9.20e-04,1.65e-03,2.67e-03

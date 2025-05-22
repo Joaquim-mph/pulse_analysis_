@@ -8,13 +8,13 @@ from pathlib import Path
 
 # ─── 1. CONSTANTS & PRECOMPILED REGEXES ────────────────────────────────────────
 
-# single source of truth for how we abbreviate pulses
 PULSE_RENAME: dict[str,str] = {
-    "raised_cosine": r"RC",
-    "btrc":          r"BTRC",
-    "elp":           r"ELP",
-    "iplcp":         r"IPLCP",
+    "raised_cosine": r"\bfseries RC",
+    "btrc":          r"\bfseries BTRC",
+    "elp":           r"\bfseries ELP",
+    "iplcp":         r"\bfseries IPLCP",
 }
+
 
 # generic parser regex: captures
 #   pulse, snr, optional sir, alpha, optional L, optional trunc, optional 'joint' flag
@@ -36,6 +36,7 @@ def truncate_pulse(base_pulse, t_max):
         out = base_pulse(t, alpha)
         return out * (np.abs(t) <= t_max)
     return g_trunc
+
 
 def results_to_df(results: dict) -> pd.DataFrame:
     """
@@ -160,14 +161,25 @@ def latex_table(
     df2 = df2.loc[:, df2.nunique(dropna=True) > 1]
 
     # 2) Sort by grouping keys
-    sort_cols = [c for c in ("snr", "sir", "trunc", "alpha", "L") if c in df2.columns]
+    sort_cols = [c for c in ("snr", "sir", "trunc", "L", "alpha") if c in df2.columns]
     if sort_cols:
         df2 = df2.sort_values(by=sort_cols).reset_index(drop=True)
 
-    # 3) Remember which were numeric, then format them
+    # 3) Remember which were numeric, then format them per-column
     numeric_cols = [c for c in df2.columns if pd.api.types.is_numeric_dtype(df2[c])]
-    for c in numeric_cols:
+
+    offset_cols = [c for c in numeric_cols if c.startswith("ber")]
+    int_cols    = [c for c in numeric_cols if c in ("snr","sir","L","trunc")]
+    alpha_cols  = [c for c in numeric_cols if c == "alpha"]
+
+    for c in offset_cols:
         df2[c] = df2[c].map(lambda x: float_format % x if pd.notna(x) else "")
+
+    for c in int_cols:
+        df2[c] = df2[c].map(lambda x: str(int(x))     if pd.notna(x) else "")
+
+    for c in alpha_cols:
+        df2[c] = df2[c].map(lambda x: f"{x:.2f}"       if pd.notna(x) else "")
 
     # 4) Make a string copy and collapse repeats into \multirow
     df3 = df2.astype(str).copy()
@@ -195,17 +207,17 @@ def latex_table(
         "alpha": r"$\alpha$",
         "L":     r"$L$",
         "trunc": r"\bfseries trunc",
-        "ber05": r"$t/T=0.05$",
-        "ber10": r"$t/T=0.10$",
-        "ber20": r"$t/T=0.20$",
-        "ber25": r"$t/T=0.25$",
+        "ber05": r"$t/T= \pm 0.05$",
+        "ber10": r"$t/T= \pm 0.10$",
+        "ber20": r"$t/T= \pm 0.20$",
+        "ber25": r"$t/T= \pm 0.25$",
         "joint": r"\bfseries joint"
     }
     cols   = list(df3.columns)
     header = " & ".join(display_names.get(c, c) for c in cols) + r" \\"
 
     # each numeric col → S, text col → l
-    aligns = ["S" if c in numeric_cols else "l" for c in cols]
+    aligns = ["c" if c in numeric_cols else "l" for c in cols]
     col_spec = "".join(aligns)
     ncol     = len(cols)
 
@@ -224,7 +236,7 @@ def latex_table(
     body = "\n".join(lines) + "\n"
 
     # 7) Wrap in table environment
-    tbl  = r"\begin{table}[ht]" + "\n"
+    tbl  = r"\begin{table}[h!]" + "\n"
     if caption:
         tbl += f"  \\caption{{{caption}}}\n"
     if label:
