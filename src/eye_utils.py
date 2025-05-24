@@ -53,7 +53,7 @@ def eye_diagram(
     g = _resolve_pulse(pulse)
     pulse_kwargs = pulse_kwargs or {}
     rng = rng or np.random.default_rng()
-    a = generate_qpsk_symbols(n_symbols, rng=rng)
+    a = generate_bpsk_symbols(n_symbols, rng=rng)
 
     t, dt = t_axis(span_T, fs, T=1.0)
     h = compute_pulse(
