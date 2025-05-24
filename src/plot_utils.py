@@ -2,11 +2,15 @@ import scienceplots
 import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import logging
 from typing import Optional
 import numpy as np
-from typing import Literal, Sequence, Optional, Tuple, Union, List, Dict
+from typing import Callable, Sequence, Optional, Tuple, Union, List, Dict
 from eye_utils   import eye_diagram  
 from styles import set_plot_style
+
+
+
 
 
 def init_pulse_plots(figsize=(25, 7), f_xlim=(-2, 2)):
@@ -200,75 +204,50 @@ def plot_pulse_markers(
 
 
 
+def save_figure(fig: plt.Figure, prefix: str, part: str, dpi: int):
+    """
+    Helper to save figure with proper directory creation.
+    """
+    path = f"{prefix}_eye_{part}.png"
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    fig.savefig(path, dpi=dpi)
+
+
+
 def plot_eye_traces(
-    pulse: Union[str, callable],
+    eye_data: Optional[np.ndarray] = None,
+    t_eye: Optional[np.ndarray] = None,
+    pulse: Union[str, Callable] = None,
     *,
-    alpha: float = 0.35,
-    fs: int = 10,
-    span_T: float = 6,
-    n_symbols: int = 100_000,
     eye_T: float = 2.0,
-    max_traces: int = 500,
-    pulse_kwargs: Optional[dict] = None,
     parts: Sequence[str] = ("real",),
+    fs: int = 10,
     prefix: str = "",
     show: bool = True,
     savefig: bool = True,
     figsize: Tuple[float, float] = (7, 7),
-    linewidth: float = 0.1,
+    linewidth: float = 0.2,
     color: str = "k",
+    alpha: float = 0.1,
     dpi: int = 300,
     y_lim: Tuple[float, float] = (-2.5, 2.5),
-    normalize: Literal["amplitude", "continuous", "discrete"] = "continuous"
-) -> Tuple[np.ndarray, np.ndarray]:
+    **kwargs
+) -> Tuple[np.ndarray, np.ndarray, plt.Figure, np.ndarray]:
     """
-    Generate and plot a highly‑customisable eye diagram.
-
-    Parameters
-    ----------
-    pulse, alpha, fs, span_T, n_symbols, eye_T, max_traces, pulse_kwargs
-        Same semantics as in `eye_diagram()` (see its docstring).
-    parts : ('real' | 'imag')[...]
-        Components to plot.  Use both to stack two subplots.
-    style : str
-        Key in your STYLE_CONFIGS dict (default 'default').
-    prefix : str
-        If non‑empty, figures saved as  f"{prefix}_eye_[part].png" .
-    show : bool
-        Call `plt.show()`.  If False figure is returned but not shown.
-    savefig : bool
-        Save to disk.
-    figsize : (float, float)
-        Single‑subplot figure size; if two parts are requested the height
-        is doubled automatically.
-    linewidth, color
-        Trace style.
-    dpi : int
-        Save resolution.
-    y_lim : (ymin, ymax)
-        y‑axis limits.
-    normalize : str
-        Pulse normalization method: 'amplitude', 'continuous', or 'discrete'.
+    Plot eye diagram using precomputed eye_data, or compute internally.
 
     Returns
     -------
-    eye : np.ndarray
-        Eye matrix (n_traces × eye_T*fs).
-    t_eye : np.ndarray
-        x‑axis for one eye trace.
+    eye, t_eye, fig, axes
     """
-    # ------------------------------------------------------------------ data
-    eye, t_eye = eye_diagram(
-        pulse, alpha=alpha, fs=fs, span_T=span_T,
-        n_symbols=n_symbols, eye_T=eye_T, max_traces=max_traces,
-        pulse_kwargs=pulse_kwargs, parts=parts,
-        normalize=normalize
-    )
+    # Compute if necessary
+    if eye_data is None or t_eye is None:
+        eye_data, t_eye, _, _ = eye_diagram(pulse, fs=fs, eye_T=eye_T, **kwargs)
 
-    # ------------------------------------------------------------------ plot
     n_parts = len(parts)
     fig, axes = plt.subplots(
-        n_parts, 1, figsize=(figsize[0], figsize[1] * n_parts),
+        n_parts, 1,
+        figsize=(figsize[0], figsize[1] * n_parts),
         sharex=True
     )
     axes = np.atleast_1d(axes)
@@ -276,28 +255,20 @@ def plot_eye_traces(
     for ax, part in zip(axes, parts):
         if part not in {"real", "imag"}:
             raise ValueError("parts must be 'real' or 'imag'")
-        data = eye.real if part == "real" else eye.imag
-        ax.plot(t_eye, data.T, color=color, lw=linewidth)
-        ax.set(
-            title=f"Eye ({part}) — {pulse if isinstance(pulse,str) else pulse.__name__}",
-            xlabel="t / T",
-            ylabel="Amplitude",
-            xlim=(-eye_T/2, eye_T/2),
-            ylim=y_lim
-        )
+        data = (eye_data.real if part == "real" else eye_data.imag)
+        ax.plot(t_eye, data.T, color=color, lw=linewidth, alpha=alpha)
+        ax.set_title(f"Eye ({part}) — {pulse if isinstance(pulse, str) else pulse.__name__}")
+        ax.set_xlabel("t / T")
+        ax.set_ylabel("Amplitude")
+        ax.set_xlim(-eye_T/2, eye_T/2)
+        ax.set_ylim(y_lim)
         ax.grid(True)
 
     fig.tight_layout()
     if savefig and prefix:
-        for part, ax in zip(parts, axes):
-            fig_path = f"eye_{prefix}_{part}.png"
-            os.makedirs(os.path.dirname(fig_path) or ".", exist_ok=True)
-            fig.savefig(fig_path, dpi=dpi)
+        for part in parts:
+            save_figure(fig, prefix, part, dpi)
     if show:
         plt.show()
 
-    # Compute max absolute amplitude at t/T = 0.5
-    idx_half = np.argmin(np.abs(t_eye - 0.5))
-    max_at_half = np.max(np.abs(eye[:, idx_half].real))
-
-    return eye, t_eye, max_at_half
+    return eye_data, t_eye, fig, axes

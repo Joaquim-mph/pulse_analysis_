@@ -80,6 +80,11 @@ def eye_diagram(
     extra = last + (last - second_last)
     eye = np.hstack([eye, extra[:, None]]) # Agrega un punto al final para asegurar t_eye tiene misma longitud que eye row
 
-    return eye, t_eye
+
+    eye_max_abs = np.max(np.abs(eye))    # magnitud completa
+    # o, si sólo te interesa la parte real
+    real_peak = np.max(np.abs(eye.real))
+
+    return eye, t_eye, eye_max_abs, real_peak
 
 
