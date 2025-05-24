@@ -11,47 +11,6 @@ from styles import set_plot_style
 
 
 
-
-
-def init_pulse_plots(figsize=(25, 7), f_xlim=(-2, 2)):
-    """
-    Create 3-panel pulse plot (impulse, magnitude, dB magnitude).
-    f_xlim: tuple, frequency axis limits for |H(f)| and dB
-    """
-    fig, axs = plt.subplots(1, 3, figsize=figsize)
-    axs[0].set(xlabel=r"$t/T$", ylabel=r"$h(t)$")
-    axs[1].set(xlabel=r"$f$ (normalized)", ylabel=r"$|H(f)|$", xlim=f_xlim)
-    axs[2].set(xlabel=r"$f$ (normalized)", ylabel="dB", xlim=f_xlim)
-
-    for ax in axs:
-        ax.grid(True)
-
-    return fig, axs
-
-
-
-def add_pulse_to_plot(t, h, f, mag, mag_db, axs, label: Optional[str] = None):
-    """
-    Plot a single pulse into existing figure/axes.
-    """
-    pos = t > 0
-    axs[0].plot(t[pos], h[pos], label=label)
-    axs[1].plot(f, mag, label=label)
-    axs[2].plot(f, mag_db, label=label)
-
-
-def finalize_pulse_plot(axs, show=True, save_path: Optional[str] = None):
-    """
-    Final layout tweaks and optional saving.
-    """
-    for ax in axs:
-        ax.legend()
-    plt.tight_layout()
-    if save_path:
-        plt.savefig(save_path, dpi=300)
-    if show:
-        plt.show()
-
     
 def plot_pulse_markers(
     pulse_data: List[Tuple[str, ...]],
@@ -228,7 +187,7 @@ def plot_eye_traces(
     figsize: Tuple[float, float] = (7, 7),
     linewidth: float = 0.2,
     color: str = "k",
-    alpha: float = 0.1,
+    alpha: float = 0.3,
     dpi: int = 300,
     y_lim: Tuple[float, float] = (-2.5, 2.5),
     **kwargs
