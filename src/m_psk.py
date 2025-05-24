@@ -51,4 +51,4 @@ plot_psk_constellation(8, '8PSK', axs[2], radius=1.0)
 
 plt.tight_layout()
 plt.savefig("figures/m_psk.png", dpi = 300)
-plt.show()
+#plt.show()

@@ -4,7 +4,7 @@ common_rc = {
     "text.usetex": False,
     "lines.markersize": 6,
     "legend.fontsize": 12,
-    "axes.grid": True,
+    "axes.grid": False,
 }
 
 STYLE_CONFIGS = {

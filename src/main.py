@@ -63,9 +63,7 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
     logger.info("Output directory: %s", out_dir)
 
-    # Estilo global
-    logger.info("Aplicando estilo 'prism_rain'")
-    set_plot_style("prism_rain")
+    
 
     # Parámetros globales
     span_T = 10
@@ -79,6 +77,7 @@ def main():
     pulsos_dir = os.path.join(out_dir, "pulses_comparation")
     os.makedirs(pulsos_dir, exist_ok=True)
     for alpha in args.alphas:
+        set_plot_style("prism_rain")
         logger.info("Procesando pulsos para α=%.2f", alpha)
         pulse_data = generate_pulse_data(alpha, span_T, T, ovs, nfft, normalize, freq_axis)
         prefix = os.path.join(pulsos_dir, f"pulse_compare_{int(alpha*100):03d}")
@@ -92,6 +91,30 @@ def main():
             f_db_xlim=(-10, 10)
         )
         logger.info("Guardado comparativa de pulsos: %s*", prefix)
+
+        # ================================================
+        # Graficar cada pulso individualmente con t_lim = ±5T
+        indiv_dir = os.path.join(pulsos_dir, "individual")
+        os.makedirs(indiv_dir, exist_ok=True)
+        for label, t, h, f, mag, mag_db in pulse_data:
+            set_plot_style("matlab")
+            logger.info("Graficando pulso individual: %s, α=%.2f", label, alpha)
+            prefix_ind = os.path.join(
+                indiv_dir,
+                f"{label.replace(' ', '_').lower()}_{int(alpha*100):03d}"
+            )
+            plot_pulse_markers(
+                [(label, t, h, f, mag, mag_db)],
+                prefix=prefix_ind,
+                show=False,
+                savefig=True,
+                which="impulse",
+                t_xlim=(-4, 4)
+            )
+            logger.info("Guardado pulso individual: %s", prefix_ind)
+        # ================================================
+
+
 
     # Estilo para diagramas de ojo
     logger.info("Aplicando estilo 'prism_rain'")

@@ -137,14 +137,14 @@ def plot_pulse_markers(
                 ax.plot(x[pos], y[pos], label=label, marker=marker,
                         linestyle=linestyle, markersize=markersize, linewidth=linewidth, markevery=3)
 
-        ax.set_title(cfg["title"])
+        #ax.set_title(cfg["title"])
         ax.set_xlabel(cfg["x_label"])
         ax.set_ylabel(cfg["y_label"])
         ax.set_xlim(cfg["x_lim"])
         if key == "db" and db_ylim:
             ax.set_ylim(db_ylim)
         ax.legend(loc=legend_loc)
-        ax.grid(True)
+        #ax.grid(True)
         fig.tight_layout()
 
         if savefig and prefix:
@@ -216,12 +216,12 @@ def plot_eye_traces(
             raise ValueError("parts must be 'real' or 'imag'")
         data = (eye_data.real if part == "real" else eye_data.imag)
         ax.plot(t_eye, data.T, color=color, lw=linewidth, alpha=alpha)
-        ax.set_title(f"Eye ({part}) — {pulse if isinstance(pulse, str) else pulse.__name__}")
+        ax.set_title(f"Eye Diagram — {pulse if isinstance(pulse, str) else pulse.__name__}")
         ax.set_xlabel("t / T")
         ax.set_ylabel("Amplitude")
         ax.set_xlim(-eye_T/2, eye_T/2)
         ax.set_ylim(y_lim)
-        ax.grid(True)
+        #ax.grid(True)
 
     fig.tight_layout()
     if savefig and prefix:
