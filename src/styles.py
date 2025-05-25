@@ -306,7 +306,7 @@ STYLE_CONFIGS = {
             "axes.facecolor": "#ffffff",
             "savefig.facecolor": "#ffffff",
             "font.family": "serif",
-            "font.serif": ["Computer Modern Roman", "Times New Roman"],
+            "font.serif": ["Arial", "DejaVu Sans"],
             "mathtext.fontset": "cm",
             "font.size": 11,
             "axes.labelsize": 12,
