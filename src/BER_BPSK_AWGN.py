@@ -13,7 +13,7 @@ def compute_ber_sim(
     SNR_lin: np.ndarray
 ) -> np.ndarray:
     nSNR = SNR_lin.size
-    BER_sim = np.empty(nSNR, dtype=np.float64)
+    BER_sim = np.empty(nSNR, dtype=np.float64) # alocates space for BER(SNR)
 
     for i in prange(nSNR):
         No = Eb / SNR_lin[i]
@@ -46,10 +46,10 @@ def compute_ber_sim(
 
 
 def simulate_bpsk(
-    num_bits=100000,
+    num_bits=1000000,
     max_runs=21,
     Eb=1.0,
-    SNR_dB=np.arange(-10, 10.5, 0.5),
+    SNR_dB=np.arange(-10, 20.5, 0.5),
 ):
     # Precompute SNR linear scale
     SNR_lin = 10.0 ** (SNR_dB / 10.0)
@@ -71,8 +71,8 @@ def simulate_bpsk(
     plt.title('BPSK AWGN')
     plt.legend()
     #plt.ylim(1e-7, 1)
-    #plt.savefig("BER_BPSK_AWGN.png", dpi = 300)
-    plt.show()
+    plt.savefig("figures/BER_BPSK_AWGN.pdf", dpi = 300)
+  
     
     return SNR_dB, BER_th, BER_sim
 

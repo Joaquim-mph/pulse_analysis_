@@ -7,9 +7,10 @@ import argparse
 import logging
 from pulse_toolbox import get_pulse_info
 from eye_utils import eye_diagram
-from plot_utils import plot_pulse_markers, plot_eye_traces
+from plot_utils import plot_pulse_markers, plot_eye_traces, plot_psk_constellation
 from styles import set_plot_style
-
+import matplotlib.pyplot as plt
+import numpy as np
 
 # logging
 default_level = logging.INFO
@@ -86,18 +87,18 @@ def main():
             t_xlim=(0, 4), f_xlim=(0, 5), f_mag_xlim=(0, 3),
             prefix=prefix,
             show=False,
-            figsize=(7, 7), markersize=3, linewidth=0.7,
+            figsize=(8, 7), markersize=3, linewidth=0.7,
             db_ylim=(-200, 5), freq_axis_label="f/B",
             f_db_xlim=(-10, 10)
         )
         logger.info("Guardado comparativa de pulsos: %s*", prefix)
 
         # ================================================
-        # Graficar cada pulso individualmente con t_lim = ±5T
+        # Graficar cada pulso individualmente
         indiv_dir = os.path.join(pulsos_dir, "individual")
         os.makedirs(indiv_dir, exist_ok=True)
         for label, t, h, f, mag, mag_db in pulse_data:
-            set_plot_style("matlab")
+            set_plot_style("ink_sketch")
             logger.info("Graficando pulso individual: %s, α=%.2f", label, alpha)
             prefix_ind = os.path.join(
                 indiv_dir,
@@ -107,11 +108,12 @@ def main():
                 [(label, t, h, f, mag, mag_db)],
                 prefix=prefix_ind,
                 show=False,
+                figsize=(8,4),
                 savefig=True,
                 which="impulse",
-                t_xlim=(-4, 4)
+                t_xlim=(-6, 6)
             )
-            logger.info("Guardado pulso individual: %s", prefix_ind)
+            logger.info("Guardando...")
         # ================================================
 
 
@@ -178,6 +180,50 @@ def main():
             )
             logger.info("%10s | %18.4f | %15.4f", name.upper(), max_val, open_val)
 
+    set_plot_style("ink_sketch")
+
+    fig, axs = plt.subplots(1, 3, figsize=(14, 4))
+
+    # No rotation
+    plot_psk_constellation(2, 'BPSK', axs[0], radius=1.0)
+    # QPSK rotated 45 degrees (π/4)
+    plot_psk_constellation(4, 'QPSK', axs[1], radius=1.0, rotation=np.pi/4)
+    # 8PSK default
+    plot_psk_constellation(8, '8PSK', axs[2], radius=1.0)
+
+
+    plt.tight_layout()
+    plt.savefig("figures/m_psk.pdf", dpi = 300)
+
+    # IRL experiments
+    # Data
+    freq = [230, 245, 260, 275, 290, 305, 320, 335, 350, 365, 380, 395, 410, 425, 440, 455, 470, 485, 500, 515, 530]
+    ber  = [4.823e-3, 6.2525e-6, 4.6417e-1, 5.0345e-1, 3.4222e-1, 5.0170e-1,
+            2.6596e-3, 3.6168e-3, 1.8685e-1, 6.8454e-3, 4.2883e-3, 7.5347e-5,
+            2.6213e-5, 3.5779e-5, 1.0752e-4, 1.2298e-4, 9.5208e-6, 1.7036e-4,
+            1.7193e-4, 2.0001e-6, 4.7379e-4]
+
+    # Plot
+    plt.figure(figsize=(9, 3))
+    plt.semilogy(freq, ber, marker='D', linestyle='--')
+    #plt.title('BER vs Frequency')
+    plt.xlabel('Frequency (MHz)')
+    plt.ylabel('BER (log scale)')
+    plt.tight_layout()
+    plt.savefig("figures/ber_frec_experimental.pdf", dpi = 300)
+
+    # Data
+    cci_db = [40, 45, 50, 55, 60, 65, 70]
+    ber =    [5.16798e-6, 4.1187e-5, 5.1755e-2, 
+            8.2407e-2, 1.2427e-1, 2.2221e-1, 4.9767e-1]
+
+    # Plot
+    plt.figure(figsize=(8, 4))
+    plt.semilogy(cci_db, ber, marker='D', linestyle='-', linewidth=1.5)
+    plt.xlabel('Ganancia interferidor (dB)')
+    plt.ylabel('BER (log scale)')
+    plt.tight_layout()
+    plt.savefig("figures/interference_experimental.pdf", dpi = 300)
 
 if __name__ == "__main__":
     main()
